@@ -1,5 +1,5 @@
 import re
-
+import pandas as pd
 dataset = [
     "Bonjour, mon email est   omar.k9999@example.com   et mon tel est 0612345678.",
     "Contactez-nous via www.monsite.ma ou https://monsite.ma/contact !!",
@@ -51,3 +51,44 @@ def clean_text(text):
 for text in dataset:
     cleaned_text = clean_text(text)
     print(cleaned_text)
+
+def extract_entities(text):
+    emails = re.findall(email_pattern, text)
+    phones = re.findall(phone_pattern, text)
+    dates = re.findall(date_pattern, text)
+    prices = re.findall(prix_pattern, text)
+    hashtags = re.findall(hashtag_pattern, text)
+    mentions = re.findall(mention_pattern, text)
+    urls = re.findall(url_pattern, text)
+    
+    return {
+        'emails': emails,
+        'phones': phones,
+        'dates': dates,
+        'prices': prices,
+        'hashtags': hashtags,
+        'mentions': mentions,
+        'urls': urls
+    }
+#"creat a dataframe to store the extracted entities"
+
+df = pd.DataFrame(columns=['original_text', 'emails', 'phones', 'dates', 'prices', 'hashtags', 'mentions', 'urls'])
+lignes = []
+for text in dataset:
+    entities = extract_entities(text)
+    ligne = {
+        'original_text': text,
+        'emails': entities['emails'],
+        'phones': entities['phones'],
+        'dates': entities['dates'],
+        'prices': entities['prices'],
+        'hashtags': entities['hashtags'],
+        'mentions': entities['mentions'],
+        'urls': entities['urls']
+    }
+    lignes.append(ligne)
+df = pd.DataFrame(lignes)
+print(df.to_string())
+#data= pd.DataFrame([extract_entities(text) for text in dataset])
+# data.insert(0, 'original_text', dataset)
+# print(data.to_string())
