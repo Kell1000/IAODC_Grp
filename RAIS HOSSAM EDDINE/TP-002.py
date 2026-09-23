@@ -37,5 +37,4 @@ for n_page in range(1, nb_pages):
                 # extract PDF file name
                     filename = urllib.request.unquote(pdf_response.url)
                     downoald_file(url_path, filename)
-        except:
-            pass
+        
