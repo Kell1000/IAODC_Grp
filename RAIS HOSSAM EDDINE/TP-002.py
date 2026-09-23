@@ -4,7 +4,11 @@ import urllib.parse
 import requests
 from bs4 import BeautifulSoup
 
-nb_pages = 1000
+nb_pages = 5
+
+# Folder where all PDFs will be saved
+DOWNLOAD_FOLDER = "pdf_files"
+os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
 session = requests.Session()
 session.headers.update({
@@ -13,19 +17,22 @@ session.headers.update({
 
 
 def download_file(pdf_url, filename):
-    response = session.get(pdf_url, timeout=30)
+    filepath = os.path.join(DOWNLOAD_FOLDER, filename)
+
+    response = session.get(pdf_url, timeout=60)
     response.raise_for_status()
 
-    with open(filename, "wb") as f:
+    with open(filepath, "wb") as f:
         f.write(response.content)
+
+    return filepath
 
 
 for n_page in range(1, nb_pages + 1):
 
-    # Replace this with the actual CORE search URL.
-    url = f"https://core.ac.uk/search?q=YOUR_QUERY&page={n_page}"
+    url = f"https://core.ac.uk/search?q=machine+learning&page={n_page}"
 
-    print(f"HTTP GET: {url}")
+    print(f"\nHTTP GET: {url}")
 
     try:
         response = session.get(url, timeout=30)
@@ -60,19 +67,45 @@ for n_page in range(1, nb_pages + 1):
                 parsed_url = urllib.parse.urlparse(pdf_response.url)
                 filename = os.path.basename(parsed_url.path)
 
-                # If the URL doesn't contain a filename
+                # If URL doesn't contain a filename
                 if not filename or not filename.lower().endswith(".pdf"):
-                    filename = f"paper_{n_page}.pdf"
+                    filename = f"paper_page_{n_page}.pdf"
 
                 # Remove unsafe characters
-                filename = re.sub(r'[<>:"/\\|?*]', "_", filename)
+                filename = re.sub(
+                    r'[<>:"/\\|?*]',
+                    "_",
+                    filename
+                )
 
-                download_file(pdf_response.url, filename)
+                # Prevent overwriting existing files
+                filepath = os.path.join(DOWNLOAD_FOLDER, filename)
 
-                print(f"Saved: {filename}")
+                if os.path.exists(filepath):
+                    name, extension = os.path.splitext(filename)
+                    counter = 1
+
+                    while os.path.exists(filepath):
+                        new_filename = f"{name}_{counter}{extension}"
+                        filepath = os.path.join(
+                            DOWNLOAD_FOLDER,
+                            new_filename
+                        )
+                        counter += 1
+
+                    filename = new_filename
+
+                # Save PDF
+                filepath = download_file(pdf_response.url, filename)
+
+                print(f"Saved: {filepath}")
 
             except requests.RequestException as e:
                 print(f"PDF download failed: {e}")
 
     except requests.RequestException as e:
         print(f"Page request failed: {e}")
+
+
+print("\nDone!")
+print(f"PDFs are saved in: {os.path.abspath(DOWNLOAD_FOLDER)}")
