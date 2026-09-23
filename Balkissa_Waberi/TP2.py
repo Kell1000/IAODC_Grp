@@ -2,7 +2,7 @@ import urllib.request
 import requests
 from bs4 import BeautifulSoup
 
-nb_pages = 1000
+nb_pages = 10
 
 def download_file(download_url, filename):
     response = urllib.request.urlopen(download_url)
