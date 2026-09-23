@@ -32,7 +32,7 @@ for n_page in range(1, nb_pages + 1):
 
     url = f"https://core.ac.uk/search?q=machine+learning&page={n_page}"
 
-    print(f"\nHTTP GET: {url}")
+    print(f"\n HTTP GET: {url}")
 
     try:
         response = session.get(url, timeout=30)
