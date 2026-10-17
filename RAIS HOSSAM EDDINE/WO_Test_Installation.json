@@ -1,0 +1,19 @@
+{
+  "data": {
+    "edges": [],
+    "nodes": [],
+    "viewport": {
+      "x": 0,
+      "y": 0,
+      "zoom": 1
+    }
+  },
+  "description": "Connect the Dots, Craft Language.",
+  "endpoint_name": null,
+  "id": "1cb8b713-b569-44ec-8f75-400450e09631",
+  "is_component": false,
+  "last_tested_version": "1.12.6",
+  "locked": false,
+  "name": "WO_Test_Installation",
+  "tags": []
+}
