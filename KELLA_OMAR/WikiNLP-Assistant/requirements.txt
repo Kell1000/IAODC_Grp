@@ -1,0 +1,36 @@
+# =====================================================================
+#  WikiNLP Assistant - dependances completes (poste de developpement)
+# =====================================================================
+#  Installation :  python -m pip install -r requirements.txt
+#  Poids approximatif telecharge : ~900 Mo (torch CPU ~200 Mo + modele ~470 Mo)
+#
+#  Plages de versions volontairement souples (>=  ,  <majeure+1) :
+#  elles evitent les ruptures d'API sans figer des versions obsoletes.
+#  Pour une reproduction a l'identique, utilisez requirements.lock.txt
+#  genere par :  python -m pip freeze > requirements.lock.txt
+# =====================================================================
+
+# ---------- Socle ----------
+python-dotenv>=1.0,<2.0        # lecture du fichier .env
+requests>=2.31,<3.0            # appels HTTP (API LLM, Ollama)
+
+# ---------- Collecte Wikipedia ----------
+wikipedia-api>=0.6,<1.0        # client MediaWiki respectueux (User-Agent requis)
+
+# ---------- Pretraitement NLP ----------
+nltk>=3.8,<4.0                 # segmentation en phrases, stop words
+regex>=2023.0                  # expressions regulieres robustes (unicode)
+
+# ---------- NLP classique ----------
+scikit-learn>=1.3,<2.0         # TF-IDF, similarite cosinus
+numpy>=1.26,<3.0
+pandas>=2.0,<3.0               # tableaux de comparaison / rapports
+
+# ---------- NLP neuronal (embeddings) ----------
+sentence-transformers>=3.0,<6.0   # tire torch + transformers automatiquement
+
+# ---------- Interface web ----------
+streamlit>=1.36,<2.0           # interface principale (local + Docker)
+
+# ---------- Tests ----------
+pytest>=8.0,<10.0

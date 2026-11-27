@@ -1,0 +1,118 @@
+# =====================================================================
+#  Integration continue - WikiNLP Assistant
+# =====================================================================
+#  A chaque push et chaque pull request, GitHub execute ce fichier sur une
+#  machine Linux neuve. Interet concret : si le projet ne fonctionne que
+#  grace a un fichier present sur VOTRE poste, la CI le revele aussitot.
+#
+#  Deux choix importants pour que la CI reste rapide et gratuite :
+#    1. requirements-lite.txt : pas de torch (~2 Go). Les tests tournent
+#       en moins d'une minute au lieu de cinq.
+#    2. RETRIEVER=tfidf et LLM_PROVIDER=extractive : aucun appel reseau,
+#       aucune cle API. Les tests sont donc deterministes.
+#
+#  Rappel : les minutes GitHub Actions sont gratuites sans limite pour un
+#  depot PUBLIC, et limitees par un quota mensuel pour un depot prive.
+#  Verifiez les conditions en vigueur sur la documentation GitHub.
+# =====================================================================
+
+name: tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:      # permet aussi un lancement manuel depuis l'onglet Actions
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # On verifie deux versions : un projet qui ne marche que sur UNE
+        # version mineure de Python est fragile.
+        python-version: ["3.11", "3.12"]
+
+    env:
+      RETRIEVER: tfidf
+      LLM_PROVIDER: extractive
+      WIKI_LANG: fr
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements-lite.txt
+
+      - name: Installer les dependances legeres
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-lite.txt
+
+      - name: Telecharger les ressources NLTK
+        # `|| true` : si le telechargement echoue, le code utilise ses
+        # solutions de secours. La CI ne doit pas rougir pour cela.
+        run: python -m nltk.downloader punkt punkt_tab stopwords || true
+
+      - name: Verifier que la configuration se charge
+        run: python -m src.config
+
+      - name: Executer les tests
+        run: python -m pytest -v
+
+      # -------------------------------------------------------------
+      #  Garde-fou de securite : aucun secret ne doit etre versionne.
+      #  Ce test echoue le build, volontairement : mieux vaut une CI
+      #  rouge qu'une cle API publiee sur Internet.
+      # -------------------------------------------------------------
+      - name: Verifier qu'aucun secret n'est commite
+        run: |
+          if git ls-files --error-unmatch .env 2>/dev/null; then
+            echo "::error::Le fichier .env est versionne ! Retirez-le :"
+            echo "  git rm --cached .env"
+            exit 1
+          fi
+          echo "OK : aucun fichier .env versionne."
+
+          if git ls-files | grep -E '\.(safetensors|bin|onnx)$'; then
+            echo "::error::Des poids de modeles sont versionnes (depot trop lourd)."
+            exit 1
+          fi
+          echo "OK : aucun poids de modele versionne."
+
+          # Recherche de cles API ressemblant a de vrais secrets dans le code
+          # suivi par git (on exclut .env.example, fait pour etre vide).
+          if git ls-files -z | grep -zv '^\.env\.example$' \
+             | xargs -0 grep -nE '(gsk_|sk-|AIza)[A-Za-z0-9_-]{15,}' 2>/dev/null; then
+            echo "::error::Une cle API semble ecrite en dur dans le code."
+            exit 1
+          fi
+          echo "OK : aucune cle API detectee en dur."
+
+  # -------------------------------------------------------------------
+  #  Verification que l'image Docker se construit reellement.
+  #  Beaucoup de projets ont un Dockerfile qui ne compile plus : cette
+  #  etape l'empeche. On ne construit que la variante legere (rapide).
+  # -------------------------------------------------------------------
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Construire l'image legere
+        run: docker build --build-arg REQUIREMENTS=requirements-lite.txt -t wikinlp:ci .
+
+      - name: Verifier que les imports fonctionnent dans l'image
+        run: |
+          docker run --rm -e RETRIEVER=tfidf -e LLM_PROVIDER=extractive \
+            wikinlp:ci python -c "from src.rag import RagPipeline; from src.config import CFG; print('imports OK, retriever =', CFG.retriever)"

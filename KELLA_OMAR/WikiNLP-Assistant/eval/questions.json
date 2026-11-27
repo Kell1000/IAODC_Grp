@@ -1,0 +1,75 @@
+{
+  "_comment": [
+    "Jeu de questions d'evaluation du TP (etape 8).",
+    "ADAPTEZ-LE a VOTRE corpus : si vous avez collecte des articles sur un",
+    "autre theme, les titres attendus ne correspondront pas.",
+    "",
+    "Champs de chaque question :",
+    "  id                 identifiant court",
+    "  question           la question posee au systeme",
+    "  type               in_corpus    -> la reponse DOIT etre trouvee",
+    "                     out_of_corpus -> le systeme DOIT refuser de repondre",
+    "  expected_keywords  mots qui devraient apparaitre dans une bonne reponse",
+    "                     (critere souple : on compte combien sont presents)",
+    "  expected_titles    titres d'articles attendus dans les sources",
+    "                     (liste vide = on ne verifie pas la source)"
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Qu'est-ce que le traitement automatique des langues ?",
+      "type": "in_corpus",
+      "expected_keywords": ["langage", "informatique", "linguistique"],
+      "expected_titles": ["Traitement automatique des langues"]
+    },
+    {
+      "id": "q2",
+      "question": "A quoi sert l'apprentissage profond ?",
+      "type": "in_corpus",
+      "expected_keywords": ["reseau", "neurone", "apprentissage"],
+      "expected_titles": ["Apprentissage profond"]
+    },
+    {
+      "id": "q3",
+      "question": "Qu'est-ce que l'intelligence artificielle ?",
+      "type": "in_corpus",
+      "expected_keywords": ["intelligence", "machine"],
+      "expected_titles": ["Intelligence artificielle"]
+    },
+    {
+      "id": "q4",
+      "question": "Comment fonctionne l'apprentissage automatique ?",
+      "type": "in_corpus",
+      "expected_keywords": ["donnees", "apprentissage", "algorithme"],
+      "expected_titles": ["Apprentissage automatique"]
+    },
+    {
+      "id": "q5",
+      "question": "Qu'est-ce qu'un grand modele de langue ?",
+      "type": "in_corpus",
+      "expected_keywords": ["modele", "langue", "texte"],
+      "expected_titles": []
+    },
+    {
+      "id": "q6",
+      "question": "Quelle est la recette exacte de la tarte tatin aux pommes ?",
+      "type": "out_of_corpus",
+      "expected_keywords": [],
+      "expected_titles": []
+    },
+    {
+      "id": "q7",
+      "question": "Quel est le resultat du match de football d'hier soir ?",
+      "type": "out_of_corpus",
+      "expected_keywords": [],
+      "expected_titles": []
+    },
+    {
+      "id": "q8",
+      "question": "Combien coute un billet de train Paris-Lyon aujourd'hui ?",
+      "type": "out_of_corpus",
+      "expected_keywords": [],
+      "expected_titles": []
+    }
+  ]
+}

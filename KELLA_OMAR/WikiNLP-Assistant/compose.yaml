@@ -1,0 +1,101 @@
+# =====================================================================
+#  WikiNLP Assistant - orchestration Docker Compose
+# =====================================================================
+#  Compose apporte ici une vraie valeur : il remplace une commande
+#  `docker run` de 8 lignes (ports, 2 volumes, env_file, healthcheck...)
+#  par un simple `docker compose up`, et versionne cette configuration.
+#
+#  COMMANDES ESSENTIELLES (PowerShell)
+#    docker compose up -d --build       # construit et demarre en arriere-plan
+#    docker compose logs -f app         # suit les journaux
+#    docker compose ps                 # etat et sante des services
+#    docker compose exec app bash       # ouvre un shell dans le conteneur
+#    docker compose down                # arrete et supprime les conteneurs
+#    docker compose down -v             # ... ET supprime les volumes (donnees)
+#
+#  Construire la variante complete (recherche semantique) :
+#    docker compose build --build-arg REQUIREMENTS=requirements.txt
+# =====================================================================
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # requirements-lite.txt = image legere, 865 Mo mesure (TF-IDF).
+        # Passez requirements.txt pour la recherche semantique.
+        REQUIREMENTS: requirements-lite.txt
+    image: wikinlp-assistant:local
+    container_name: wikinlp-app
+
+    ports:
+      # "hote:conteneur" - si 8501 est deja pris sur votre machine,
+      # changez SEULEMENT le nombre de gauche : "8502:8501"
+      - "8501:8501"
+
+    # Les secrets viennent du fichier .env LOCAL, jamais de l'image.
+    # Le fichier doit exister : copiez .env.example en .env.
+    env_file:
+      - .env
+
+    environment:
+      # Ces valeurs ecrasent celles de .env : elles sont specifiques au
+      # conteneur et ne doivent pas dependre de la machine de l'etudiant.
+      - HF_HOME=/app/hf_cache
+      - STREAMLIT_SERVER_HEADLESS=true
+      # L'image legere n'embarque pas sentence-transformers : on force la
+      # recherche lexicale pour eviter un repli bruyant au demarrage.
+      - RETRIEVER=${RETRIEVER:-tfidf}
+
+    volumes:
+      # PERSISTANCE 1 : corpus et index vectoriel.
+      # Sans ce volume, tout le travail de collecte serait perdu a chaque
+      # `docker compose down`, et il faudrait reconstruire l'index.
+      - ./data:/app/data
+      # PERSISTANCE 2 : cache des modeles Hugging Face.
+      # Volume nomme (gere par Docker) plutot qu'un dossier local : evite
+      # les problemes de droits Windows/Linux sur des centaines de fichiers.
+      - hf_cache:/app/hf_cache
+
+    restart: unless-stopped
+
+    # Garde-fous memoire : empechent le conteneur d'asphyxier une machine
+    # a 16 Go. Montez la limite a 4g si vous utilisez la variante complete
+    # avec torch et un modele d'embeddings : le pic de memoire resident y a
+    # ete MESURE a 1 495 Mo (contre 312 Mo en TF-IDF), donc 2g ne suffit pas
+    # des que Streamlit et le modele cohabitent.
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  # -------------------------------------------------------------------
+  # Service OPTIONNEL : LLM local, pour fonctionner sans aucune API.
+  # Il ne demarre QUE si vous le demandez explicitement :
+  #     docker compose --profile local-llm up -d
+  # Puis, une seule fois, telechargez un petit modele :
+  #     docker compose exec ollama ollama pull qwen2.5:1.5b-instruct
+  # Et dans .env :  LLM_PROVIDER=ollama
+  #                 OLLAMA_HOST=http://ollama:11434
+  # (dans un reseau Compose, on s'adresse au service par son NOM, pas
+  #  par localhost : localhost designerait le conteneur appelant)
+  # -------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama:latest
+    container_name: wikinlp-ollama
+    profiles: ["local-llm"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          # Un modele 1,5 B quantifie tient dans ~3 Go avec son contexte.
+          memory: 4g
+
+volumes:
+  hf_cache:
+  ollama_models:

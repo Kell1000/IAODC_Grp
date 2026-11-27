@@ -1,0 +1,63 @@
+# ---------- Secrets : JAMAIS sur GitHub ----------
+.env
+.env.*
+!.env.example
+*.key
+secrets.toml
+.streamlit/secrets.toml
+
+# ---------- Environnements virtuels ----------
+.venv/
+venv/
+env/
+ENV/
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ---------- Tests / qualite ----------
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# ---------- Donnees generees (volumineuses) ----------
+data/raw/*
+data/processed/*
+data/index/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/index/.gitkeep
+
+# Exception : le mini-corpus de demonstration est versionne (petit, < 1 Mo)
+!data/processed/demo_chunks.jsonl
+
+# ---------- Caches de modeles (plusieurs centaines de Mo) ----------
+.cache/
+hf_cache/
+models/
+*.bin
+*.safetensors
+*.onnx
+
+# ---------- Rapports d'evaluation ----------
+eval/results_*.json
+eval/results_*.md
+
+# ---------- OS / editeurs ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp

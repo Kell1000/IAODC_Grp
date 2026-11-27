@@ -1,0 +1,22 @@
+# =====================================================================
+#  WikiNLP Assistant - dependances LEGERES (CI + hebergement gratuit)
+# =====================================================================
+#  Pas de torch, pas de sentence-transformers : ~60 Mo au total.
+#  A utiliser avec RETRIEVER=tfidf (recherche lexicale).
+#
+#  Pourquoi ce second fichier ?
+#   - GitHub Actions : les tests tournent en ~40 s au lieu de ~5 min
+#   - Streamlit Community Cloud / petits hebergeurs : la RAM gratuite
+#     (~1 Go) ne suffit pas a charger torch + un modele d'embeddings
+# =====================================================================
+
+python-dotenv>=1.0,<2.0
+requests>=2.31,<3.0
+wikipedia-api>=0.6,<1.0
+nltk>=3.8,<4.0
+regex>=2023.0
+scikit-learn>=1.3,<2.0
+numpy>=1.26,<3.0
+pandas>=2.0,<3.0
+streamlit>=1.36,<2.0
+pytest>=8.0,<10.0

@@ -1,0 +1,38 @@
+# Secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Environnements et caches locaux (ne JAMAIS les mettre dans l'image)
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Caches de modeles : telecharges au runtime dans un volume, pas dans l'image
+hf_cache/
+.cache/
+models/
+
+# Donnees : montees en volume, pas copiees dans l'image
+data/raw/*
+data/processed/*
+data/index/*
+!data/processed/demo_chunks.jsonl
+
+# Git et CI
+.git/
+.github/
+.gitignore
+
+# Divers
+docs/
+eval/results_*
+*.md
+!README.md

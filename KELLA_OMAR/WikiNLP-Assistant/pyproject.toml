@@ -1,0 +1,15 @@
+[project]
+name = "wikinlp-assistant"
+version = "1.0.0"
+description = "Assistant NLP/RAG sur un corpus Wikipedia (TP complet)"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-v --tb=short"
+markers = [
+    "slow: test lent (telecharge un modele d'embeddings)",
+    "network: test necessitant un acces reseau (Wikipedia / API LLM)",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
